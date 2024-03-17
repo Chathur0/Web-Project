@@ -22,20 +22,50 @@ setInterval(function () {
         displayDateTime();
     }
 }, 1000);
-document.addEventListener('DOMContentLoaded', getLocation);
+
 function getLocation() {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition);
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
     } else {
         document.getElementById("loadingN").style.display = "none";
         document.getElementById("name").innerHTML = "Location is not supported by this browser.";
     }
 }
+
 function showPosition(position) {
     let latitude = position.coords.latitude;
     let longitude = position.coords.longitude;
     findDetailsThroughLatAndLon(latitude, longitude);
 }
+
+function showError(error) {
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            var option = confirm("Location permission denied from system. Do you want to set default location? select [OK]");
+            if (option == true) {
+                // Set default location
+                findDetailsThroughLatAndLon(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+            } else {
+                // Retry
+                getLocation();
+            }
+            break;
+        case error.POSITION_UNAVAILABLE:
+            document.getElementById("name").innerHTML = "Location information is unavailable.";
+            break;
+        case error.TIMEOUT:
+            document.getElementById("name").innerHTML = "The request to get user location timed out.";
+            break;
+        case error.UNKNOWN_ERROR:
+            document.getElementById("name").innerHTML = "An unknown error occurred.";
+            break;
+    }
+}
+let DEFAULT_LATITUDE = 6.93; 
+let DEFAULT_LONGITUDE = 79.85;
+
+getLocation();
+
 let tempC;
 let tempF;
 let temp = document.getElementById("temp")
@@ -557,7 +587,7 @@ function showWeatherHistory() {
                     document.getElementById(day).innerHTML = element["date"];
                     document.getElementById(dayI).src = element["icon"]
                     document.getElementById(dayC).innerHTML = element["condition"]
-                    document.getElementById(dayBtn).innerHTML = `<a href="#HmoreContainer" class="w-100 rounded-1 btn btn-outline-dark" onclick="showHMore(${i + 1})">More...</a>`;
+                    document.getElementById(dayBtn).innerHTML = `<a href="#HmoreContainer" class="w-100 rounded-1 btn btn-outline-dark" onclick="showHMore(${i})">More...</a>`;
 
                 }
             });
@@ -567,26 +597,25 @@ function showWeatherHistory() {
 }
 
 function showHMore(index) {
-    if (weatherHistoryArray.length != 0) {
-        document.getElementById("HmoreContainer").style.display = "block";
-        let i = 0;
-        weatherHistoryArray.forEach(element => {
-            if (i == index) {
-                document.getElementById("HmoreDate").innerHTML = "Date: " + element["date"];
-                document.getElementById("HmoreMaxTemp").innerHTML = element["maxTempC"] + "&deg;C / " + element["maxTempF"] + "&deg;F";
-                document.getElementById("HmoreLowTemp").innerHTML = element["minTempC"] + "&deg;C / " + element["minTempF"] + "&deg;F";
-                document.getElementById("HmoreMaxWind").innerHTML = element["maxWind"] + " km/h";
-                document.getElementById("HmorePre").innerHTML = element["totalPre"] + " mm";
-                document.getElementById("HmoreAVGH").innerHTML = element["averageHum"] + "%";
-                document.getElementById("HmoreRain").innerHTML = element["rainPos"] + "%";
-                document.getElementById("HmoreSunR").innerHTML = element["sunrise"];
-                document.getElementById("HmoreSunS").innerHTML = element["sunset"];
-                document.getElementById("HmoreMoonR").innerHTML = element["moonrise"];
-                document.getElementById("HmoreMoonS").innerHTML = element["moonset"];
-            }
-            i++;
-        });
-    } else {
-        alert("Set Location First");
-    }
+    document.getElementById("HmoreContainer").style.display = "block";
+    let i = 0;
+    let selectedDate = new Date(lastSevenDays[index]);
+    selectedDate = selectedDate.toLocaleDateString('en-US');
+    weatherHistoryArray.forEach(element => {
+        let sDateH = new Date(element["date"]);
+        sDateH = sDateH.toLocaleDateString('en-US');
+        if (selectedDate == sDateH) {
+            document.getElementById("HmoreDate").innerHTML = "Date: " + element["date"];
+            document.getElementById("HmoreMaxTemp").innerHTML = element["maxTempC"] + "&deg;C / " + element["maxTempF"] + "&deg;F";
+            document.getElementById("HmoreLowTemp").innerHTML = element["minTempC"] + "&deg;C / " + element["minTempF"] + "&deg;F";
+            document.getElementById("HmoreMaxWind").innerHTML = element["maxWind"] + " km/h";
+            document.getElementById("HmorePre").innerHTML = element["totalPre"] + " mm";
+            document.getElementById("HmoreAVGH").innerHTML = element["averageHum"] + "%";
+            document.getElementById("HmoreRain").innerHTML = element["rainPos"] + "%";
+            document.getElementById("HmoreSunR").innerHTML = element["sunrise"];
+            document.getElementById("HmoreSunS").innerHTML = element["sunset"];
+            document.getElementById("HmoreMoonR").innerHTML = element["moonrise"];
+            document.getElementById("HmoreMoonS").innerHTML = element["moonset"];
+        }
+    });
 }
