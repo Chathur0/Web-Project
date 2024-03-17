@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="shortcut icon" href="4052984.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Tilt+Neon&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: "Sarabun", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        body {
+            background-image: url(360_F_579861052_KjeAAbyaXOBY6JjxMEPBVJypp2KSb59v.jpg);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .weatherImg {
+            width: 250px;
+        }
+
+        .bOpacity {
+            opacity: 0.5;
+        }
+
+        .list-group-item:hover {
+            background-color: #979494;
+            color: white;
+        }
+
+        .skeleton {
+            animation: skeleton-animation 1s linear infinite alternate;
+        }
+
+        @keyframes skeleton-animation {
+            0% {
+                background-color: rgba(109, 109, 109, 0.612);
+            }
+
+            100% {
+                background-color: rgba(206, 208, 194, 0.612);
+            }
+        }
+
+        .last {
+            color: white;
+        }
+
+        .last:hover {
+            color: black;
+        }
+
+        .siteNav::after {
+            content: '';
+            width: 0%;
+            height: 2px;
+            background: rgb(255, 255, 255);
+            display: block;
+            margin: auto;
+            transition: 0.5s;
+        }
+
+        .siteNav:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container mt-5">
+            <a href="index.html">
+                <img src="Untitled-3.png" alt="Weather icon" class="weatherImg">
+            </a>
+            <button class="navbar-toggler" style="color: aliceblue;" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active siteNav" aria-current="page" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active siteNav" href="#current" onclick="getLocation()">Current</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active siteNav" href="#for">Forecast</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active siteNav" href="#his">Weather History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active siteNav" href="#mapC">Map</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row mt-md-5 mt-sm-5 mt-5">
+            <div class="col-md-9 col-sm-12 ">
+                <input class="form-control me-2" type="search" placeholder="Enter City" aria-label="Search"
+                    id="searchInput" oninput="showSuggestions()" onclick="showSuggestions()">
+                <div class="list-group position-absolute " style="z-index: 2;" id="suggestions"></div>
+            </div>
+            <div class="col-md-3 col-sm-12 mt-3 mt-md-0">
+                <button class="btn btn-outline-light w-100 fw-bolder" type="submit" id="sBtn">Search</button>
+            </div>
+        </div>
+        <div class="container mt-5 rounded-3" style="backdrop-filter: blur(19px); border: 1px solid white; "
+            id="current">
+            <div class="row">
+                <div class="mt-3 text-center">
+                    <img src="Untitled-4.png" alt="" class="col-md-4 col-sm-10 col-12">
+                </div>
+            </div>
+            <div class="row text-white">
+                <table class="col-md-6 mt-3 col-sm-12 col-lg-8" style="margin-left: 50px;">
+                    <tr>
+                        <td class="col-md-1"></td>
+                        <td class="d-flex align-items-center">
+                            <span class="spinner-border" role="status" aria-hidden="true" style="margin-bottom: 30px;"
+                                id="loadingN"></span>
+                            <h1 class="fw-bolder" id="name"></h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="spinner-border text-light" role="status" id="loadingI"></div>
+                            <img src="" alt="" id="img">
+                        </td>
+                        <td class="d-flex align-items-center">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
+                                id="loadingT"></span>
+                            <h1 class="fw-bolder" id="temp"></h1>
+                            <button type="button" class="btn btn-none text-white fw-bolder " style="font-size: 35px;"
+                                id="btnC">&deg;C</button>
+                            <h1 id="bS">/</h1>
+                            <button type="button" class="btn btn-none text-white fw-bolder bOpacity"
+                                style="font-size: 35px;" id="btnF">&deg;F</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
+                                id="loadingCl"></span>
+                            <p style="font-size: 20px;" id="cloudy"></p>
+                        </td>
+                    </tr>
+                </table>
+                <table class="col-md-5 col-sm-12 col-12 col-lg-3 mt-3 text-center">
+                    <tr>
+                        <td>
+                            <h1 class="fw-bolder" id="timeSection"></h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h5 id="dateSection"></h5>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4>Regional date and time</h4>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="container">
+                <div class="row my-4 rounded-2" style="background-color: #ffffffa9;">
+                    <!-- 1 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                        <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                            <div class="d-flex align-content-center justify-content-center gap-2">
+                                <img src="icon/location.png" alt="" style="height: 25px;">
+                                <p>Location</p>
+                            </div>
+                            <div class="text-center pb-1">
+                                <p id="shLocation"><span class="spinner-border text-dark spinner-border-sm"
+                                        role="status" id="shLocationLo"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 2 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder  py-2 mb-1">
+                        <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                            <div class="d-flex align-content-center justify-content-center gap-2">
+                                <img src="icon/nature.png" alt="" style="height: 25px;">
+                                <p>Temperature</p>
+                            </div>
+                            <div class="text-center pb-1">
+                                <p id="shTemp"><span class="spinner-border text-dark spinner-border-sm" role="status"
+                                        id="shTempLo"></span></p>
+
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 3 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder  py-2 mb-1">
+                        <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                            <div class="d-flex align-content-center justify-content-center gap-2">
+                                <img src="icon/water.png" alt="" style="height: 25px;">
+                                <p>Humidity</p>
+                            </div>
+                            <div class="text-center pb-1">
+                                <p id="shHum"><span class="spinner-border text-dark spinner-border-sm" role="status"
+                                        id="shHumLo"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 4 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder  py-2 mb-1">
+                        <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                            <div class="d-flex align-content-center justify-content-center gap-2">
+                                <img src="icon/wind.png" alt="" style="height: 25px;">
+                                <p>Wind Speed</p>
+                            </div>
+                            <div class="text-center pb-1">
+                                <p id="shWSpeed"><span class="spinner-border text-dark spinner-border-sm" role="status"
+                                        id="shWSpeedLo"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 5 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2  text-black fw-bolder  py-2 mb-1">
+                        <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                            <div class="d-flex align-content-center justify-content-center gap-2">
+                                <img src="icon/world.png" alt="" style="height: 25px;">
+                                <p>Region</p>
+                            </div>
+                            <div class="text-center pb-1">
+                                <p id="shRegion"><span class="spinner-border text-dark spinner-border-sm" role="status"
+                                        id="shRegionLo"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 6 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2  text-black fw-bolder  py-2 mb-1">
+                        <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                            <div class="d-flex align-content-center justify-content-center gap-2">
+                                <img src="icon/countries.png" alt="" style="height: 25px;">
+                                <p>Country</p>
+                            </div>
+                            <div class="text-center pb-1">
+                                <p id="shCou"><span class="spinner-border text-dark spinner-border-sm" role="status"
+                                        id="shCouLo"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 7 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-4  text-black fw-bolder  py-2 mb-1">
+                        <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                            <div class="d-flex align-content-center justify-content-center gap-2">
+                                <img src="icon/latitude.png" alt="" style="height: 25px;">
+                                <p>Latitude</p>
+                            </div>
+                            <div class="text-center pb-1">
+                                <p id="shLat"><span class="spinner-border text-dark spinner-border-sm" role="status"
+                                        id="shLatLo"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 8 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-4 text-black fw-bolder py-2 mb-1">
+                        <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                            <div class="d-flex align-content-center justify-content-center gap-2">
+                                <img src="icon/longitude.png" alt="" style="height: 25px;">
+                                <p>Longitude</p>
+                            </div>
+                            <div class="text-center pb-1">
+                                <p id="shLon"><span class="spinner-border text-dark spinner-border-sm" role="status"
+                                        id="shLonLo"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 9 -->
+                    <div class="col-12 col-sm-4 col-md-12 col-lg-4  text-black fw-bolder  py-2 mb-1">
+                        <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                            <div class="d-flex align-content-center justify-content-center gap-2">
+                                <img src="icon/weather.png" alt="" style="height: 25px;">
+                                <p>Condition</p>
+                            </div>
+                            <div class="text-center pb-1">
+                                <p id="shCon"><span class="spinner-border text-dark spinner-border-sm" role="status"
+                                        id="shConLo"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="moreMain">
+                    <a href="#moreContainer" class="w-100 rounded-1 btn btn btn-outline-light mb-3 fw-bolder"
+                        onclick="showMore(0)">More...</a>
+                </div>
+            </div>
+        </div>
+        <!-- forecast -->
+        <div class="container mt-5 rounded-3" style="backdrop-filter: blur(19px); border: 1px solid white;" id="for">
+            <div class="row">
+                <div class="mt-3 text-center">
+                    <img src="Untitled-2.png" alt="" class="col-md-4 col-sm-10 col-12">
+                </div>
+            </div>
+            <div class="container">
+                <div class="row my-4 rounded-2" style="background-color: #ffffffa9;">
+                    <div class="col-6 text-center fw-bolder d-flex justify-content-center gap-2 mt-2">
+                        <i class="bi bi-calendar2-event"></i>
+                        <p style="font-size: 18px
+                            ;" id="fStart">To : YYYY-MM-DD</p>
+                    </div>
+                    <div class="col-6 text-center fw-bolder d-flex justify-content-center gap-2 mt-2">
+                        <i class="bi bi-calendar2-week"></i>
+                        <p style="font-size: 18px
+                            ;" id="fEnd">End : YYYY-MM-DD</p>
+                    </div>
+                    <!-- 1 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1 skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="day1DC">
+                            <p style="font-size: 20px;" id="day1"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day1IC">
+                            <img src="" alt="" style="height: 100px;" id="day1I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day1CC">
+                            <p style="font-size: 20px;" id="day1C"></p>
+                        </div>
+                        <div class="text-center py-1" id="day1Btn"></div>
+                    </div>
+                    <!-- 2 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1 skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="day2DC">
+                            <p style="font-size: 20px;" id="day2"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day2IC">
+                            <img src="" alt="" style="height: 100px;" id="day2I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day2CC">
+                            <p style="font-size: 20px;" id="day2C"></p>
+                        </div>
+                        <div class="text-center py-1" id="day2Btn"></div>
+                    </div>
+                    <!-- 3 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1 skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="day3DC">
+                            <p style="font-size: 20px;" id="day3"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day3IC">
+                            <img src="" alt="" style="height: 100px;" id="day3I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day3CC">
+                            <p style="font-size: 20px;" id="day3C"></p>
+                        </div>
+                        <div class="text-center py-1" id="day3Btn"></div>
+                    </div>
+                    <!-- 4 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1 skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="day4DC">
+                            <p style="font-size: 20px;" id="day4"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day4IC">
+                            <img src="" alt="" style="height: 100px;" id="day4I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day4CC">
+                            <p style="font-size: 20px;" id="day4C"></p>
+                        </div>
+                        <div class="text-center py-1" id="day4Btn"></div>
+                    </div>
+                    <!-- 5 -->
+                    <div class="col-6 col-sm-4 col-md-6 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1  skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="day5DC">
+                            <p style="font-size: 20px;" id="day5"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day5IC">
+                            <img src="" alt="" style="height: 100px;" id="day5I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day5CC">
+                            <p style="font-size: 20px;" id="day5C"></p>
+                        </div>
+                        <div class="text-center py-1" id="day5Btn"></div>
+                    </div>
+                    <!-- 6 -->
+                    <div class="col-6 col-sm-4 col-md-6 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1 skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="day6DC">
+                            <p style="font-size: 20px;" id="day6"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day6IC">
+                            <img src="" alt="" style="height: 100px;" id="day6I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="day6CC">
+                            <p style="font-size: 20px;" id="day6C"></p>
+                        </div>
+                        <div class="text-center py-1" id="day6Btn"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="container my-4 rounded-2" style="background-color: #ffffffa9; display: none;"
+                        id="moreContainer">
+                        <div class="row">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <div class="col-11 d-flex justify-content-center align-items-center gap-4 mt-3">
+                                    <img src="climate-change (1).png" alt="" style="height: 50px;">
+                                    <h5 id="moreDate"></h5>
+                                </div>
+                                <button class="btn">
+                                    <img src="closed-eyes.png" alt="" style="height: 25px;" onclick="hideMore()">
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <!-- 1 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/high-temperature.png" alt="" style="height: 25px;">
+                                        <p>Max Temp</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="moreMaxTemp"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 2 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/low-temperature.png" alt="" style="height: 25px;">
+                                        <p>Low Temp</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="moreLowTemp"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 3 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/hurricane.png" alt="" style="height: 25px;">
+                                        <p>Max Wind</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="moreMaxWind"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 4 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/thermometer.png" alt="" style="height: 25px;">
+                                        <p>Total precipitation</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="morePre"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 5 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/humidity.png" alt="" style="height: 25px;">
+                                        <p>Average Humidity</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="moreAVGH"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 6 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/rain.png" alt="" style="height: 25px;">
+                                        <p>Rain Possibility</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="moreRain"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 7 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-3 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/sunrise.png" alt="" style="height: 25px;">
+                                        <p>Sunrise</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="moreSunR"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 8 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-3 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/sunset.png" alt="" style="height: 25px;">
+                                        <p>Sunset</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="moreSunS"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 9 -->
+                            <div class="col-6 col-sm-4 col-md-6 col-lg-3 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/high.png" alt="" style="height: 25px;">
+                                        <p>Moonrise</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="moreMoonR"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 10 -->
+                            <div class="col-6 col-sm-12 col-md-6 col-lg-3 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/low.png" alt="" style="height: 25px;">
+                                        <p>Moonset</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="moreMoonS"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- forecast -->
+        <!-- History -->
+        <div class="container mt-5 rounded-3" style="backdrop-filter: blur(19px); border: 1px solid white;" id="his">
+            <div class="row">
+                <div class="mt-3 text-center">
+                    <img src="Untitled-6.png" alt="" class="col-md-4 col-sm-10 col-12">
+                </div>
+            </div>
+            <div class="container">
+                <div class="row my-4 rounded-2" style="background-color: #ffffffa9;">
+                    <div class="col-6 text-center fw-bolder d-flex justify-content-center gap-2 mt-2">
+                        <i class="bi bi-calendar2-event"></i>
+                        <p style="font-size: 18px
+                            ;" id="hStart">To : YYYY-MM-DD</p>
+                    </div>
+                    <div class="col-6 text-center fw-bolder d-flex justify-content-center gap-2 mt-2">
+                        <i class="bi bi-calendar2-week"></i>
+                        <p style="font-size: 18px
+                            ;" id="hEnd">End : YYYY-MM-DD</p>
+                    </div>
+                    <!-- 1 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1 skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="Hday1DC">
+                            <p style="font-size: 20px;" id="Hday1"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday1IC">
+                            <img src="" alt="" style="height: 100px;" id="Hday1I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday1CC">
+                            <p style="font-size: 20px;" id="Hday1C"></p>
+                        </div>
+                        <div class="text-center py-1" id="Hday1Btn"></div>
+                    </div>
+                    <!-- 2 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1 skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="Hday2DC">
+                            <p style="font-size: 20px;" id="Hday2"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday2IC">
+                            <img src="" alt="" style="height: 100px;" id="Hday2I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday2CC">
+                            <p style="font-size: 20px;" id="Hday2C"></p>
+                        </div>
+                        <div class="text-center py-1" id="Hday2Btn"></div>
+                    </div>
+                    <!-- 3 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1 skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="Hday3DC">
+                            <p style="font-size: 20px;" id="Hday3"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday3IC">
+                            <img src="" alt="" style="height: 100px;" id="Hday3I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday3CC">
+                            <p style="font-size: 20px;" id="Hday3C"></p>
+                        </div>
+                        <div class="text-center py-1" id="Hday3Btn"></div>
+                    </div>
+                    <!-- 4 -->
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1 skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="Hday4DC">
+                            <p style="font-size: 20px;" id="Hday4"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday4IC">
+                            <img src="" alt="" style="height: 100px;" id="Hday4I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday4CC">
+                            <p style="font-size: 20px;" id="Hday4C"></p>
+                        </div>
+                        <div class="text-center py-1" id="Hday4Btn"></div>
+                    </div>
+                    <!-- 5 -->
+                    <div class="col-6 col-sm-4 col-md-6 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1  skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="Hday5DC">
+                            <p style="font-size: 20px;" id="Hday5"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday5IC">
+                            <img src="" alt="" style="height: 100px;" id="Hday5I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday5CC">
+                            <p style="font-size: 20px;" id="Hday5C"></p>
+                        </div>
+                        <div class="text-center py-1" id="Hday5Btn"></div>
+                    </div>
+                    <!-- 6 -->
+                    <div class="col-6 col-sm-4 col-md-6 col-lg-2 py-2 fw-bolder text-black">
+                        <div class="rounded-1 text-center py-1 skeleton"
+                            style="background-color: rgba(132, 132, 132, 0.449);" id="Hday6DC">
+                            <p style="font-size: 20px;" id="Hday6"></p>
+                        </div>
+                        <div class="text-center skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday6IC">
+                            <img src="" alt="" style="height: 100px;" id="Hday6I">
+                        </div>
+                        <div class="text-center py-1 skeleton" style="background-color: rgba(132, 132, 132, 0.449);"
+                            id="Hday6CC">
+                            <p style="font-size: 20px;" id="Hday6C"></p>
+                        </div>
+                        <div class="text-center py-1" id="Hday6Btn"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="container my-4 rounded-2" style="background-color: #ffffffa9; display: none;"
+                        id="HmoreContainer">
+                        <div class="row">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <div class="col-11 d-flex justify-content-center align-items-center gap-4 mt-3">
+                                    <img src="climate-change (1).png" alt="" style="height: 50px;">
+                                    <h5 id="HmoreDate"></h5>
+                                </div>
+                                <button class="btn">
+                                    <img src="closed-eyes.png" alt="" style="height: 25px;" onclick="hideHMore()">
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <!-- 1 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/high-temperature.png" alt="" style="height: 25px;">
+                                        <p>Max Temp</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="HmoreMaxTemp"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 2 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/low-temperature.png" alt="" style="height: 25px;">
+                                        <p>Low Temp</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="HmoreLowTemp"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 3 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/hurricane.png" alt="" style="height: 25px;">
+                                        <p>Max Wind</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="HmoreMaxWind"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 4 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/thermometer.png" alt="" style="height: 25px;">
+                                        <p>Total precipitation</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="HmorePre"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 5 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/humidity.png" alt="" style="height: 25px;">
+                                        <p>Average Humidity</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="HmoreAVGH"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 6 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/rain.png" alt="" style="height: 25px;">
+                                        <p>Rain Possibility</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="HmoreRain"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 7 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-3 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/sunrise.png" alt="" style="height: 25px;">
+                                        <p>Sunrise</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="HmoreSunR"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 8 -->
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-3 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/sunset.png" alt="" style="height: 25px;">
+                                        <p>Sunset</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="HmoreSunS"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 9 -->
+                            <div class="col-6 col-sm-4 col-md-6 col-lg-3 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/high.png" alt="" style="height: 25px;">
+                                        <p>Moonrise</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="HmoreMoonR"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 10 -->
+                            <div class="col-6 col-sm-12 col-md-6 col-lg-3 text-black fw-bolder py-2 mb-1">
+                                <div class="rounded-2 pt-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                                    <div class="d-flex align-content-center justify-content-center gap-2">
+                                        <img src="icon/low.png" alt="" style="height: 25px;">
+                                        <p>Moonset</p>
+                                    </div>
+                                    <div class="text-center pb-1">
+                                        <p id="HmoreMoonS"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- History -->
+        <!-- map -->
+        <div class="container mt-5 rounded-3" style="backdrop-filter: blur(19px); border: 1px solid white;" id="mapC">
+            <div class="row">
+                <div class="mt-3 text-center">
+                    <img src="Untitled-5.png" alt="" class="col-md-4 col-sm-10 col-12">
+                </div>
+            </div>
+            <div class="row">
+                <div class="my-3 text-center">
+                    <div id="map" class="w-100 rounded-2 skeleton" style="height: 500px;" id="mapCon"></div>
+                </div>
+            </div>
+        </div>
+        <!-- map -->
+    </div>
+    <div class="container-fluid mt-5" style="backdrop-filter: blur(30px);">
+        <div class="row">
+            <div class="container d-flex justify-content-center justify-content-sm-start mt-5" style="width: 90%;">
+                <img src="Untitled-3.png" alt="" class="col-md-4 col-sm-6 col-7 col-xl-3 col-xxl-2">
+            </div>
+        </div>
+        <div class="row my-4">
+            <div class="container text-center" style="width: 90%;">
+                <h1 class="fw-bolder text-white">Dynamically changing weather application...!</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="container d-flex justify-content-center" style="width: 90%;">
+                <div class="row text-white" style="width: 100%;">
+                    <div class="col-12 col-sm-8">
+                        <div class="col-12 d-md-flex rounded-2 py-3 text-center mb-2"
+                            style="background-color: rgba(132, 132, 132, 0.449);">
+                            <h6 class="fw-bolder col-md-4 text-md-end">Used Technology</h6>
+                            <ul class="text-start" style="list-style: none;">
+                                <li>
+                                    <a href="https://getbootstrap.com" style="text-decoration: none;"
+                                        class="gap-3 d-flex mb-3 last">
+                                        <img src="icon/boostrap-classes.png" alt="" style="width: 25px;">Bootstrap
+                                        (Classes & Elements & Icons)
+                                    </a>
+                                </li>
+                                <li class="gap-3 d-flex"><img src="icon/html-5.png" alt="" style="width: 25px;">HTML
+                                    <img src="icon/css-3.png" alt="" style="width: 25px;"> CSS
+                                    <img src="icon/java-script.png" alt="" style="width: 25px;"> Java Script
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-12 d-md-flex rounded-2 py-3 text-center mb-2"
+                            style="background-color: rgba(132, 132, 132, 0.449);">
+                            <h6 class="fw-bolder col-md-4 text-md-end">Recourses</h6>
+                            <ul style="list-style: none;" class="text-start">
+                                <li>
+                                    <a href="https://www.youtube.com" style="text-decoration: none;"
+                                        class="gap-3 d-flex mb-3 last">
+                                        <img src="icon/youtube.png" alt="" style="width: 25px;">YouTube.com
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://chat.openai.com" style="text-decoration: none;"
+                                        class="gap-3 d-flex mb-3 last">
+                                        <img src="icon/chat-gpt.png" alt="" style="width: 25px;">openai.com
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://www.w3schools.com" style="text-decoration: none;"
+                                        class="gap-3 d-flex mb-3 last">
+                                        <img src="icon/W3School.png" alt="" style="width: 25px;">w3schools.com
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://www.flaticon.com" style="text-decoration: none;"
+                                        class="gap-3 d-flex mb-3 last">
+                                        <img src="icon/flaticon.png" alt="" style="width: 25px;">Flaticon.com (Icons)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://getbootstrap.com" style="text-decoration: none;"
+                                        class="gap-3 d-flex last">
+                                        <img src="icon/bootstrap.png" alt="" style="width: 25px;">getbootstrap.com
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-4 text-center mb-2">
+                        <div class="col rounded-2 p-3" style="background-color: rgba(132, 132, 132, 0.449);">
+                            <a href="" class="p-4"><img src="icon/github.png" alt="" style="width: 25px;"></a>
+                            <p>Created by : <b>Chathuranga</b></p>
+                            <p>Created date : 2024-03-17</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid text-center" style="background-color: #979494;">
+
+        <a href="" class="last">@ 2024-03-17 All released via Github</a>
+
+    </div>
+    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</body>
+
+</html>
