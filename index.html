@@ -80,10 +80,25 @@
         .siteNav:hover::after {
             width: 100%;
         }
+
+        #scrollBtn {
+            display: none;;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99;
+            border-radius: 10px;
+            background-color:rgba(132, 132, 132, 0.449);
+            width: 40px;
+            cursor: pointer;
+            padding: 5px;
+        }
+    </style>
     </style>
 </head>
 
 <body>
+    <img src="icon/arrow.png" alt="" id="scrollBtn" onclick="scrollToTop()">
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container mt-5">
             <a href="index.html">
@@ -135,7 +150,7 @@
                 </div>
             </div>
             <div class="row text-white">
-                <table class="col-md-6 mt-3 col-sm-12 col-lg-8" style="margin-left: 50px;">
+                <table class="col-10 col-md-6 mt-3 col-sm-12 col-lg-8" style="margin-left: 50px;">
                     <tr>
                         <td class="col-md-1"></td>
                         <td class="d-flex align-items-center">
@@ -169,7 +184,7 @@
                         </td>
                     </tr>
                 </table>
-                <table class="col-md-5 col-sm-12 col-12 col-lg-3 mt-3 text-center">
+                <table class="col-12 col-md-5 col-sm-12 col-12 col-lg-3 mt-3 text-center">
                     <tr>
                         <td>
                             <h1 class="fw-bolder" id="timeSection"></h1>
@@ -839,6 +854,7 @@
                 <div class="my-3 text-center">
                     <div id="map" class="w-100 rounded-2 skeleton" style="height: 500px;" id="mapCon">
                         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+                        <!-- some time this script not load before initializeMap() call that why this script put to hear -->
                     </div>
                 </div>
             </div>
@@ -868,12 +884,14 @@
                                     <a href="https://getbootstrap.com" style="text-decoration: none;"
                                         class="gap-3 d-flex mb-3 last">
                                         <img src="icon/boostrap-classes.png" alt="" style="width: 25px;">Bootstrap
-                                        (Classes & Elements & Icons)
                                     </a>
                                 </li>
-                                <li class="gap-3 d-flex"><img src="icon/html-5.png" alt="" style="width: 25px;">HTML
-                                    <img src="icon/css-3.png" alt="" style="width: 25px;"> CSS
-                                    <img src="icon/java-script.png" alt="" style="width: 25px;"> Java Script
+                                <li>
+                                    <div class="d-block d-sm-flex ">
+                                        <div class="gap-3 d-flex mb-3"><img src="icon/html-5.png" alt="" style="width: 25px;">HTML</div>
+                                        <div class="gap-3 d-flex mb-3"><img src="icon/css-3.png" alt="" style="width: 25px;"> CSS</div>
+                                        <div class="gap-3 d-flex"><img src="icon/java-script.png" alt="" style="width: 25px;"> Java Script</div>
+                                    </div>
                                 </li>
                             </ul>
                         </div>
