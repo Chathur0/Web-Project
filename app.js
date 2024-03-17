@@ -3,6 +3,10 @@ let myCountry = "Sri Lanka";
 // for history
 let lastSevenDays = [];
 
+let DEFAULT_LATITUDE = 6.93; 
+let DEFAULT_LONGITUDE = 79.85;
+
+
 for (let i = 1; i < 7; i++) {
     let currentDate = new Date(localDateAndTime);
     currentDate.setDate(localDateAndTime.getDate() - i);
@@ -22,7 +26,7 @@ setInterval(function () {
         displayDateTime();
     }
 }, 1000);
-
+getLocation();
 function getLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition, showError);
@@ -61,10 +65,7 @@ function showError(error) {
             break;
     }
 }
-let DEFAULT_LATITUDE = 6.93; 
-let DEFAULT_LONGITUDE = 79.85;
 
-getLocation();
 
 let tempC;
 let tempF;
