@@ -163,6 +163,98 @@ function findDetailsThroughLatAndLon(latitude, longitude) {
     initializeMap(latitude, longitude);
     setWeatherHistory(latitude, longitude);
 }
+function findDetailsThroughId(id) {
+    document.getElementById("moreContainer").style.display = "none";
+    let cityId = "id:" + id;
+    fetch(`https://api.weatherapi.com/v1/forecast.json?key=eed2846bcaa64ab2bdf40121241003&q=${cityId}&days=7`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("loadingN").style.display = "none";
+            document.getElementById("name").innerHTML = data["location"]["name"];
+            document.getElementById("loadingT").style.display = "none";
+            document.getElementById("bS").style.display = "block";
+            tempC = data["current"]["temp_c"];
+            tempF = data["current"]["temp_f"];
+            temp.innerHTML = tempC
+            document.getElementById("loadingCl").style.display = "none";
+            document.getElementById("cloudy").innerHTML = data["current"]["condition"]["text"];
+            document.getElementById("loadingI").style.display = "none";
+            document.getElementById("img").src = data["current"]["condition"]["icon"];
+            let country = data["location"]["country"];
+            // shBar
+            document.getElementById("shLocation").innerHTML = data["location"]["tz_id"];
+            document.getElementById("shTemp").innerHTML = tempC + "&deg;C";
+            document.getElementById("shHum").innerHTML = data["current"]["humidity"] + "%";
+            document.getElementById("shWSpeed").innerHTML = data["current"]["wind_kph"] + " km/h";
+            document.getElementById("shRegion").innerHTML = data["location"]["region"];
+            document.getElementById("shCou").innerHTML = data["location"]["country"];
+            initializeMap(data["location"]["lat"], data["location"]["lon"]);
+            setWeatherHistory(data["location"]["lat"], data["location"]["lon"]);
+            document.getElementById("shLat").innerHTML = data["location"]["lat"];
+            document.getElementById("shLon").innerHTML = data["location"]["lon"];
+            document.getElementById("shCon").innerHTML = data["current"]["condition"]["text"];
+            if (myCountry != country) {
+                localDateAndTime = new Date(data["location"]["localtime"]);
+            } else {
+                localDateAndTime = new Date();
+            }
+            displayDateTime();
+            if (inputFiled.value != '') {
+                inputFiled.value = data["location"]["name"];
+            }
+
+            //sFos
+            let i = 0;
+            weatherArray = [];
+            data["forecast"]["forecastday"].forEach(element => {
+                let date = element["date"];
+                let maxTempC = element["day"]["maxtemp_c"];
+                let maxTempF = element["day"]["maxtemp_f"];
+                let minTempC = element["day"]["mintemp_c"];
+                let minTempF = element["day"]["mintemp_f"];
+                let maxWind = element["day"]["maxwind_kph"];
+                let totalPre = element["day"]["totalprecip_mm"];
+                let averageHum = element["day"]["avghumidity"];
+                let rainPos = element["day"]["daily_chance_of_rain"];
+                let sunrise = element["astro"]["sunrise"];
+                let sunset = element["astro"]["sunset"];
+                let moonrise = element["astro"]["moonrise"];
+                let moonset = element["astro"]["moonset"];
+                let weatherData = { maxTempC, maxTempF, minTempC, minTempF, maxWind, totalPre, averageHum, rainPos, sunrise, sunset, moonrise, moonset, date };
+                weatherArray.push(weatherData);
+                if (i == 0) {
+                    document.getElementById("timeSection").innerText = element["date"];
+                }
+                if (i > 0) {
+                    if (i == 1) {
+                        document.getElementById("fStart").innerHTML = "To : " + element["date"];
+                    } else if (i == 6) {
+                        document.getElementById("fEnd").innerHTML = "End : " + element["date"];
+                    }
+                    let day = `day${i}`;
+                    let dayI = day + "I";
+                    let dayC = day + "C";
+                    let dayBtn = day + "Btn";
+                    let dayDC = day + "DC";
+                    let dayIC = day + "IC";
+                    let dayCC = day + "CC";
+
+                    document.getElementById(dayDC).classList.remove('skeleton');
+                    document.getElementById(dayIC).classList.remove('skeleton');
+                    document.getElementById(dayCC).classList.remove('skeleton');
+                    document.getElementById(day).innerHTML = date;
+                    document.getElementById(dayI).src = element["day"]["condition"]["icon"];
+                    document.getElementById(dayC).innerHTML = element["day"]["condition"]["text"];
+                    document.getElementById(dayBtn).innerHTML = `
+    <a href="#moreContainer" class="w-100 rounded-1 btn btn-outline-dark" onclick="showMore(${i})">
+        More...
+    </a>`;
+                }
+                i++;
+            });
+        })
+        .then(error => console.log(error));
+}
 
 document.getElementById("btnF").addEventListener("click", function () {
     let btnC = document.getElementById("btnC");
@@ -213,7 +305,7 @@ function showSuggestions() {
                         i++;
                         nameS = element["name"];
                         countryS = element["country"];
-                        sug += `<button class="list-group-item list-group-item-action" onclick="findDetailsThroughLatAndLon(${element["lat"]},${element["lon"]})" value="${nameS}" id="sSBtn">
+                        sug += `<button class="list-group-item list-group-item-action" onclick="findDetailsThroughId(${element["id"]})">
                                     <h5 class="mb-1">${nameS}</h5>
                                     <p class="mb-1">${countryS}</p>
                                 </button>`
