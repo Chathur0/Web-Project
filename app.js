@@ -35,11 +35,12 @@ function getLocation() {
         document.getElementById("name").innerHTML = "Location is not supported by this browser.";
     }
 }
-
+let isCOmeTroughLocation = true;
 function showPosition(position) {
     let latitude = position.coords.latitude;
     let longitude = position.coords.longitude;
     nameIsSet = false;
+    isCOmeTroughLocation = true;
     findDetailsThroughLatAndLon(latitude, longitude);
 }
 
@@ -111,6 +112,9 @@ function findDetailsThroughLatAndLon(latitude, longitude) {
             displayDateTime();
             if (!nameIsSet) {
                 inputFiled.value = data["location"]["name"];
+            }
+            if (isCOmeTroughLocation) {
+                inputFiled.value = '';
             }
 
             //sFos
@@ -232,7 +236,6 @@ function showSuggestions() {
 }
 let nameIsSet = false;
 function findDetails(lat, lon) {
-    console.log(document.getElementById("A").value);
     document.getElementById("loadingN").style.display = "none";
     inputFiled.value = document.getElementById("A").value;
     document.getElementById("name").innerHTML = document.getElementById("A").value;
