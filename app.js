@@ -35,12 +35,10 @@ function getLocation() {
         document.getElementById("name").innerHTML = "Location is not supported by this browser.";
     }
 }
-let isCOmeTroughLocation = true;
+
 function showPosition(position) {
     let latitude = position.coords.latitude;
     let longitude = position.coords.longitude;
-    nameIsSet = false;
-    isCOmeTroughLocation = true;
     findDetailsThroughLatAndLon(latitude, longitude);
 }
 
@@ -80,10 +78,7 @@ function findDetailsThroughLatAndLon(latitude, longitude) {
         .then(response => response.json())
         .then(data => {
             document.getElementById("loadingN").style.display = "none";
-            if (!nameIsSet) {
-                document.getElementById("name").innerHTML = data["location"]["name"]; 
-                nameIsSet=false;
-            }
+            document.getElementById("name").innerHTML = data["location"]["name"];
             document.getElementById("loadingT").style.display = "none";
             document.getElementById("bS").style.display = "block";
             tempC = data["current"]["temp_c"];
@@ -110,12 +105,8 @@ function findDetailsThroughLatAndLon(latitude, longitude) {
                 localDateAndTime = new Date();
             }
             displayDateTime();
-            if (!nameIsSet) {
+            if (inputFiled.value != '') {
                 inputFiled.value = data["location"]["name"];
-            }
-            if (isCOmeTroughLocation) {
-                inputFiled.value = '';
-                isCOmeTroughLocation = false;
             }
 
             //sFos
@@ -222,7 +213,7 @@ function showSuggestions() {
                         i++;
                         nameS = element["name"];
                         countryS = element["country"];
-                        sug += `<button class="list-group-item list-group-item-action" onclick="findDetails(${element["lat"]},${element["lon"]})" value="${element["name"]}" id="A">
+                        sug += `<button class="list-group-item list-group-item-action" onclick="findDetailsThroughLatAndLon(${element["lat"]},${element["lon"]})" value="${nameS}" id="sSBtn">
                                     <h5 class="mb-1">${nameS}</h5>
                                     <p class="mb-1">${countryS}</p>
                                 </button>`
@@ -235,20 +226,13 @@ function showSuggestions() {
         suggestionsList.innerHTML = '';
     }
 }
-let nameIsSet = false;
-function findDetails(lat, lon) {
-    document.getElementById("loadingN").style.display = "none";
-    inputFiled.value = document.getElementById("A").value;
-    document.getElementById("name").innerHTML = document.getElementById("A").value;
-    nameIsSet = true;
-    findDetailsThroughLatAndLon(lat, lon);
-}
 document.getElementById("sBtn").addEventListener("click", () => {
     document.getElementById("moreContainer").style.display = "none";
     let name = inputFiled.value;
     fetch(`https://api.weatherapi.com/v1/forecast.json?key=eed2846bcaa64ab2bdf40121241003&q=${name}&days=7`)
         .then(response => response.json())
         .then(data => {
+            console.log(data);
             document.getElementById("loadingN").style.display = "none";
             document.getElementById("name").innerHTML = data["location"]["name"];
             document.getElementById("loadingT").style.display = "none";
