@@ -115,6 +115,7 @@ function findDetailsThroughLatAndLon(latitude, longitude) {
             }
             if (isCOmeTroughLocation) {
                 inputFiled.value = '';
+                isCOmeTroughLocation = false;
             }
 
             //sFos
