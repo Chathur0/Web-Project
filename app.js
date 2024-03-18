@@ -3,7 +3,7 @@ let myCountry = "Sri Lanka";
 // for history
 let lastSevenDays = [];
 
-let DEFAULT_LATITUDE = 6.93; 
+let DEFAULT_LATITUDE = 6.93;
 let DEFAULT_LONGITUDE = 79.85;
 
 
@@ -39,11 +39,12 @@ function getLocation() {
 function showPosition(position) {
     let latitude = position.coords.latitude;
     let longitude = position.coords.longitude;
+    nameIsSet = false;
     findDetailsThroughLatAndLon(latitude, longitude);
 }
 
 function showError(error) {
-    switch(error.code) {
+    switch (error.code) {
         case error.PERMISSION_DENIED:
             var option = confirm("Location permission denied from system. Do you want to set default location? select [OK]");
             if (option == true) {
@@ -78,7 +79,10 @@ function findDetailsThroughLatAndLon(latitude, longitude) {
         .then(response => response.json())
         .then(data => {
             document.getElementById("loadingN").style.display = "none";
-            document.getElementById("name").innerHTML = data["location"]["name"];
+            if (!nameIsSet) {
+                document.getElementById("name").innerHTML = data["location"]["name"]; 
+                nameIsSet=false;
+            }
             document.getElementById("loadingT").style.display = "none";
             document.getElementById("bS").style.display = "block";
             tempC = data["current"]["temp_c"];
@@ -105,7 +109,7 @@ function findDetailsThroughLatAndLon(latitude, longitude) {
                 localDateAndTime = new Date();
             }
             displayDateTime();
-            if (inputFiled.value != '') {
+            if (!nameIsSet) {
                 inputFiled.value = data["location"]["name"];
             }
 
@@ -213,7 +217,7 @@ function showSuggestions() {
                         i++;
                         nameS = element["name"];
                         countryS = element["country"];
-                        sug += `<button class="list-group-item list-group-item-action" onclick="findDetailsThroughLatAndLon(${element["lat"]},${element["lon"]})">
+                        sug += `<button class="list-group-item list-group-item-action" onclick="findDetails(${element["lat"]},${element["lon"]})" value="${element["name"]}" id="A">
                                     <h5 class="mb-1">${nameS}</h5>
                                     <p class="mb-1">${countryS}</p>
                                 </button>`
@@ -225,6 +229,15 @@ function showSuggestions() {
     } else {
         suggestionsList.innerHTML = '';
     }
+}
+let nameIsSet = false;
+function findDetails(lat, lon) {
+    console.log(document.getElementById("A").value);
+    document.getElementById("loadingN").style.display = "none";
+    inputFiled.value = document.getElementById("A").value;
+    document.getElementById("name").innerHTML = document.getElementById("A").value;
+    nameIsSet = true;
+    findDetailsThroughLatAndLon(lat, lon);
 }
 document.getElementById("sBtn").addEventListener("click", () => {
     document.getElementById("moreContainer").style.display = "none";
@@ -624,7 +637,7 @@ function showHMore(index) {
 var scrollButton = document.getElementById("scrollBtn");
 
 // When the user scrolls down 20px from the top of the document, show the button
-window.onscroll = function() {scrollFunction()};
+window.onscroll = function () { scrollFunction() };
 
 function scrollFunction() {
     if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
