@@ -72,11 +72,12 @@ let tempF;
 let temp = document.getElementById("temp")
 let inputFiled = document.getElementById('searchInput');
 let weatherArray = [];
+let key = "b013c19d85c449ee88661126240609"
 function findDetailsThroughLatAndLon(latitude, longitude) {
     document.getElementById("moreContainer").style.display = "none";
-    fetch(`https://api.weatherapi.com/v1/forecast.json?key=eed2846bcaa64ab2bdf40121241003&q=${latitude},${longitude}&days=7`)
+    fetch(`https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${latitude},${longitude}&days=7`)
         .then(response => response.json())
-        .then(data => {
+        .then(data => {           
             document.getElementById("loadingN").style.display = "none";
             document.getElementById("name").innerHTML = data["location"]["name"];
             document.getElementById("loadingT").style.display = "none";
@@ -166,7 +167,7 @@ function findDetailsThroughLatAndLon(latitude, longitude) {
 function findDetailsThroughId(id) {
     document.getElementById("moreContainer").style.display = "none";
     let cityId = "id:" + id;
-    fetch(`https://api.weatherapi.com/v1/forecast.json?key=eed2846bcaa64ab2bdf40121241003&q=${cityId}&days=7`)
+    fetch(`https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${cityId}&days=7`)
         .then(response => response.json())
         .then(data => {
             document.getElementById("loadingN").style.display = "none";
@@ -283,7 +284,7 @@ function showSuggestions() {
     suggestionsList.innerHTML = '';
     let sug = '';
     if (input != "") {
-        fetch(`https://api.weatherapi.com/v1/search.json?key=eed2846bcaa64ab2bdf40121241003&q=${input}`)
+        fetch(`https://api.weatherapi.com/v1/search.json?key=${key}&q=${input}`)
             .then(response => response.json())
             .then(data => {
                 if (data.length == 0) {
@@ -321,7 +322,7 @@ function showSuggestions() {
 document.getElementById("sBtn").addEventListener("click", () => {
     document.getElementById("moreContainer").style.display = "none";
     let name = inputFiled.value;
-    fetch(`https://api.weatherapi.com/v1/forecast.json?key=eed2846bcaa64ab2bdf40121241003&q=${name}&days=7`)
+    fetch(`https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${name}&days=7`)
         .then(response => response.json())
         .then(data => {
             console.log(data);
@@ -475,7 +476,7 @@ function setWeatherHistory(lat, lon) {
     //         } else if (i == 5) {
     //             document.getElementById("hEnd").innerHTML = "End : " + date;
     //         }
-    //         fetch(`http://api.weatherapi.com/v1/history.json?key=eed2846bcaa64ab2bdf40121241003&q=${lat},${lon}&dt=${date}`)
+    //         fetch(`http://api.weatherapi.com/v1/history.json?key=${key}&q=${lat},${lon}&dt=${date}`)
     //             .then(response => response.json())
     //             .then(data => {
     //                 //sHis
@@ -502,7 +503,7 @@ function setWeatherHistory(lat, lon) {
     //     }
     // }
     let date1 = lastSevenDays[0];
-    fetch(`https://api.weatherapi.com/v1/history.json?key=eed2846bcaa64ab2bdf40121241003&q=${lat},${lon}&dt=${date1}`)
+    fetch(`https://api.weatherapi.com/v1/history.json?key=${key}&q=${lat},${lon}&dt=${date1}`)
         .then(response => response.json())
         .then(data => {
             //sHis
@@ -527,7 +528,7 @@ function setWeatherHistory(lat, lon) {
             showWeatherHistory();
         }).then(error => console.log(error));
     let date2 = lastSevenDays[1];
-    fetch(`https://api.weatherapi.com/v1/history.json?key=eed2846bcaa64ab2bdf40121241003&q=${lat},${lon}&dt=${date2}`)
+    fetch(`https://api.weatherapi.com/v1/history.json?key=${key}&q=${lat},${lon}&dt=${date2}`)
         .then(response => response.json())
         .then(data => {
             //sHis
@@ -552,7 +553,7 @@ function setWeatherHistory(lat, lon) {
             showWeatherHistory();
         }).then(error => console.log(error));
     let date3 = lastSevenDays[2];
-    fetch(`https://api.weatherapi.com/v1/history.json?key=eed2846bcaa64ab2bdf40121241003&q=${lat},${lon}&dt=${date3}`)
+    fetch(`https://api.weatherapi.com/v1/history.json?key=${key}&q=${lat},${lon}&dt=${date3}`)
         .then(response => response.json())
         .then(data => {
             //sHis
@@ -577,7 +578,7 @@ function setWeatherHistory(lat, lon) {
             showWeatherHistory();
         }).then(error => console.log(error));
     let date4 = lastSevenDays[3];
-    fetch(`https://api.weatherapi.com/v1/history.json?key=eed2846bcaa64ab2bdf40121241003&q=${lat},${lon}&dt=${date4}`)
+    fetch(`https://api.weatherapi.com/v1/history.json?key=${key}&q=${lat},${lon}&dt=${date4}`)
         .then(response => response.json())
         .then(data => {
             //sHis
@@ -602,7 +603,7 @@ function setWeatherHistory(lat, lon) {
             showWeatherHistory();
         }).then(error => console.log(error));
     let date5 = lastSevenDays[4];
-    fetch(`https://api.weatherapi.com/v1/history.json?key=eed2846bcaa64ab2bdf40121241003&q=${lat},${lon}&dt=${date5}`)
+    fetch(`https://api.weatherapi.com/v1/history.json?key=${key}&q=${lat},${lon}&dt=${date5}`)
         .then(response => response.json())
         .then(data => {
             //sHis
@@ -627,7 +628,7 @@ function setWeatherHistory(lat, lon) {
             showWeatherHistory();
         }).then(error => console.log(error));
     let date6 = lastSevenDays[5];
-    fetch(`https://api.weatherapi.com/v1/history.json?key=eed2846bcaa64ab2bdf40121241003&q=${lat},${lon}&dt=${date6}`)
+    fetch(`https://api.weatherapi.com/v1/history.json?key=${key}&q=${lat},${lon}&dt=${date6}`)
         .then(response => response.json())
         .then(data => {
             //sHis
